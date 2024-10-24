@@ -1,36 +1,32 @@
 'use client'
 import React from 'react';
-import { useFileProcessing } from './backend';
+import { useFileProcessing } from './backend/backend.js';
 
 const FileDropZone = () => {
-  const { fileInfo, handleDrop } = useFileProcessing(); // Get logic from route.js
+  const { fileInfo, handleDrop, globalFileData } = useFileProcessing(); // Access global file data
+
+  // Function to use globalFileData globally
+  const handleGlobalData = () => {
+    console.log("Global file data:", globalFileData);
+    // You can use globalFileData here for any global operations
+  };
 
   return (
     <div>
       {/* Drag-and-Drop Zone */}
       <div
+        className='dropbox'
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()} // Allow file dropping
-        style={{
-          border: '2px dashed #ccc',
-          padding: '20px',
-          textAlign: 'center',
-          cursor: 'pointer',
-        }}
       >
-        <p>Drag & Drop your ZIP file here</p>
+        <p>Drag and drop files here</p>
       </div>
 
       {/* Display File Info */}
       {fileInfo && (
         <div>
           <p>Load time: {fileInfo.loadTime} ms</p>
-          <p>Contents:</p>
-          <ul>
-            {fileInfo.contents.map((content, index) => (
-              <li key={index}>{content}</li>
-            ))}
-          </ul>
+          <button onClick={handleGlobalData}>Use Global Data</button>
           {fileInfo.error && <p>Error: {fileInfo.error}</p>}
         </div>
       )}
