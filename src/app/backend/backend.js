@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import JSZip from "jszip";
 import moment from "moment";
 
-// Logic to handle file drop and zip processing
+
 export const useFileProcessing = () => {
   const [files, setFiles] = useState([]);
   const [fileInfo, setFileInfo] = useState(null);
