@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import { useFileProcessing } from './api/chat/route.js';
+import { useFileProcessing } from './backend';
 
 const FileDropZone = () => {
   const { fileInfo, handleDrop } = useFileProcessing(); // Get logic from route.js
