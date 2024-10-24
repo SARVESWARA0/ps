@@ -26,7 +26,7 @@ const FileDropZone = () => {
       {fileInfo && (
         <div>
           <p>Load time: {fileInfo.loadTime} ms</p>
-          <button onClick={handleGlobalData}>Use Global Data</button>
+          <button onClick={handleGlobalData}>Upload</button>
           {fileInfo.error && <p>Error: {fileInfo.error}</p>}
         </div>
       )}
