@@ -4,13 +4,15 @@ import { experimental_useObject as useObject } from "ai/react";
 
 const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }) => {
   const [chatStarted, setChatStarted] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
   
   const { messages = [], object, submit } = useObject({
     api: "/api/chat",
     initialObject: {
       status_of_completion: "",
       code_complexity: "",
-      evaluation_question: ""
+      evaluation_question: "",
+      options: [] // Initialize options to an empty array
     }
   });
 
@@ -47,6 +49,34 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
       
       setChatStarted(true);
       console.log("Submit response completed");
+    } catch (error) {
+      console.error("Error:", error);
+      setError(error.message || "An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNextQuestion = async () => {
+    if (!selectedOption) {
+      setError("Please select an option before proceeding");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const nextQuestionMessage = {
+        role: "user",
+        content: JSON.stringify({
+          type: "answer_submission",
+          answer: selectedOption
+        })
+      };
+
+      await submit({ messages: [nextQuestionMessage] });
+      setSelectedOption(null); // Reset the selection after submission
     } catch (error) {
       console.error("Error:", error);
       setError(error.message || "An unexpected error occurred");
@@ -117,14 +147,6 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
         </div>
       )}
 
-      <div className="space-y-4">
-        {messages.length > 0 ? (
-          messages.map((message, index) => renderMessage(message, index))
-        ) : (
-          <p>No messages yet. Start a new analysis to see results here.</p>
-        )}
-      </div>
-
       {loading && (
         <div className="flex items-center justify-center py-4">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
@@ -150,17 +172,33 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
             <div className="evaluation">
               <h3 className="text-lg font-semibold mb-2">Next Question</h3>
               <p className="text-gray-700 mb-4">{object.evaluation_question}</p>
-              <ul className="list-disc pl-6">
-                {object.options && object.options.length > 0 ? (
-                  object.options.map((option, index) => (
-                    <li key={index} className="text-gray-700">
-                      {option}
+              {object.options && object.options.length > 0 ? (
+                <ul className="list-disc pl-6">
+                  {object.options.map((option) => (
+                    <li key={option} className="flex items-center space-x-2">
+                      <input 
+                        type="radio" 
+                        id={`option-${option}`} 
+                        name="answer" 
+                        value={option} 
+                        checked={selectedOption === option}
+                        onChange={(e) => setSelectedOption(e.target.value)}
+                        className="form-radio text-blue-500"
+                      />
+                      <label htmlFor={`option-${option}`} className="text-gray-700">{option}</label>
                     </li>
-                  ))
-                ) : (
-                  <li className="text-gray-500">No options available</li>
-                )}
-              </ul>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">No options available</p>
+              )}
+              <button 
+                className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleNextQuestion}
+                disabled={loading || !selectedOption}
+              >
+                Next Question
+              </button>
             </div>
           )}
         </div>
