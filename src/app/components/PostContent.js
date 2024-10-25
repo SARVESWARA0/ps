@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { experimental_useObject as useObject } from "ai/react";
 
 const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }) => {
-  const [response, setResponse] = useState(null);
+  const [chatStarted, setChatStarted] = useState(false);
   
-  const { messages, object, submit } = useObject({
+  const { messages = [], object, submit } = useObject({
     api: "/api/chat",
     initialObject: {
       status_of_completion: "",
@@ -14,11 +14,15 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
     }
   });
 
+  useEffect(() => {
+    console.log("Object updated:", object);
+  }, [object]); // Log updates in `object` when it changes
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!fileContents?.length) {
-      setError("Please upload files before analyzing");
+      setError("Please upload files before starting the analysis");
       return;
     }
 
@@ -30,14 +34,19 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
         name,
         content: fileContents[index],
       }));
-      
-      const result = await submit({ files: fileData });
-      
-     
 
+      const initialMessage = {
+        role: "user",
+        content: JSON.stringify({
+          type: "file_submission",
+          files: fileData
+        })
+      };
 
-      setResponse(result);
+      await submit({ messages: [initialMessage] });
       
+      setChatStarted(true);
+      console.log("Submit response completed");
     } catch (error) {
       console.error("Error:", error);
       setError(error.message || "An unexpected error occurred");
@@ -46,34 +55,60 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
     }
   };
 
-  const renderResponseSection = (title, content) => (
-    <div className="mb-4">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-700">{content}</p>
-    </div>
-  );
+  const renderMessage = (message, index) => {
+    let displayContent = message.content;
+    try {
+      const parsedContent = JSON.parse(message.content);
+      if (parsedContent.type === "file_submission") {
+        displayContent = "Files submitted for analysis: " + 
+          parsedContent.files.map(f => f.name).join(", ");
+      }
+    } catch (e) {
+      displayContent = message.content;
+    }
+
+    return (
+      <div 
+        key={index}
+        className={`p-4 rounded-lg mb-4 ${
+          message.role === "user" 
+            ? "bg-blue-50 ml-auto max-w-[80%]" 
+            : "bg-gray-50 mr-auto max-w-[80%]"
+        }`}
+      >
+        <div className="text-sm text-gray-500 mb-1">
+          {message.role === "user" ? "You" : "Assistant"}
+        </div>
+        <div className="text-gray-700">
+          {displayContent}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Code Analysis</h2>
+        <h2 className="text-2xl font-bold mb-4">Code Analysis Chat</h2>
         
-        <form onSubmit={handleSubmit}>
-          <button 
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-            type="submit" 
-            disabled={loading || !fileContents?.length}
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <span className="animate-spin">⌛</span> 
-                Analyzing...
-              </span>
-            ) : (
-              "Analyze Code"
-            )}
-          </button>
-        </form>
+        {!chatStarted && (
+          <form onSubmit={handleSubmit}>
+            <button 
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+              type="submit" 
+              disabled={loading || !fileContents?.length}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⌛</span> 
+                  Starting Analysis...
+                </span>
+              ) : (
+                "Start Code Analysis"
+              )}
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Error Display */}
@@ -83,12 +118,41 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
         </div>
       )}
 
-      {/* Response Display */}
-      {response && (
+      {/* Chat Messages Display */}
+      <div className="space-y-4">
+        {messages.length > 0 ? (
+          messages.map((message, index) => renderMessage(message, index))
+        ) : (
+          <p>No messages yet. Start a new analysis to see results here.</p>
+        )}
+      </div>
+
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="flex items-center justify-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
+        </div>
+      )}
+
+      {/* Analysis Results */}
+      {object && object.status_of_completion && (
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-          {renderResponseSection("Completion Status", response.status_of_completion)}
-          {renderResponseSection("Code Complexity", response.code_complexity)}
-          {renderResponseSection("Evaluation Question", response.evaluation_question)}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Status</h3>
+            <p className="text-gray-700">{object.status_of_completion}</p>
+          </div>
+          {object.code_complexity && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Complexity Analysis</h3>
+              <p className="text-gray-700">{object.code_complexity}</p>
+            </div>
+          )}
+          {object.evaluation_question && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Next Question</h3>
+              <p className="text-gray-700">{object.evaluation_question}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
