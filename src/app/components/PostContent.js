@@ -9,8 +9,6 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
   const { messages = [], object, submit } = useObject({
     api: "/api/chat",
     initialObject: {
-      status_of_completion: "",
-      code_complexity: "",
       evaluation_question: "",
       options: [] // Initialize options to an empty array
     }
@@ -154,20 +152,8 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
       )}
 
       {/* Analysis Results */}
-      {object && object.status_of_completion && (
+      {object && object.evaluation_question && (
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-          <div className="completion">
-            <h3 className="text-lg font-semibold mb-2">Status</h3>
-            <p className="text-gray-700">{object.status_of_completion}</p>
-          </div>
-          <div className="complexity">
-            {object.code_complexity && (
-              <>
-                <h3 className="text-lg font-semibold mb-2">Complexity Analysis</h3>
-                <p className="text-gray-700">{object.code_complexity}</p>
-              </>
-            )}
-          </div>
           {object.evaluation_question && (
             <div className="evaluation">
               <h3 className="text-lg font-semibold mb-2">Next Question</h3>
