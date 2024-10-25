@@ -1,37 +1,37 @@
-'use client'
-import React from 'react';
-import { useFileProcessing } from './backend/backend.js';
+"use client";
+import React, { useState } from "react";
+import FileDropZone from "./components/FileDropZone"; // Adjust import path as necessary
+import PostContents from "./components/PostContent"; // Adjust import path as necessary
+import "./globals.css";
 
-const FileDropZone = () => {
-  const { fileInfo, handleDrop, globalFileData } = useFileProcessing(); // Access global file data
+const Page = () => {
+  const [fileNames, setFileNames] = useState([]);
+  const [fileContents, setFileContents] = useState([]);
+  const [loading, setLoading] = useState(false); // Loading state for file submission
+  const [error, setError] = useState(null); // Error state
 
-  // Function to use globalFileData globally
-  const handleGlobalData = () => {
-    console.log("Global file data:", globalFileData);
-    // You can use globalFileData here for any global operations
+  const handleGlobalFileData = (fileData) => {
+    // Extract names and contents and set the state
+    const names = fileData.map(file => file.name);
+    const contents = fileData.map(file => file.content);
+
+    setFileNames(names);
+    setFileContents(contents);
   };
-
+ 
   return (
     <div>
-      {/* Drag-and-Drop Zone */}
-      <div
-        className='dropbox'
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()} // Allow file dropping
-      >
-        <p>Drag and drop files here</p>
-      </div>
-
-      {/* Display File Info */}
-      {fileInfo && (
-        <div>
-          <p>Load time: {fileInfo.loadTime} ms</p>
-          <button onClick={handleGlobalData}>Upload</button>
-          {fileInfo.error && <p>Error: {fileInfo.error}</p>}
-        </div>
-      )}
+      <FileDropZone onGlobalFileData={handleGlobalFileData} />
+      <PostContents 
+        fileNames={fileNames} 
+        fileContents={fileContents} 
+        loading={loading} 
+        setLoading={setLoading} 
+        setError={setError} 
+      />
+      {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
     </div>
   );
 };
 
-export default FileDropZone;
+export default Page;

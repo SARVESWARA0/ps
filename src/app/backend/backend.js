@@ -1,72 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import JSZip from "jszip";
-import moment from "moment";
-
 
 export const useFileProcessing = () => {
-  const [files, setFiles] = useState([]);
-  const [fileInfo, setFileInfo] = useState(null);
-  const [globalFileData, setGlobalFileData] = useState([]); // Global variable to store file contents
+  const [globalFileData, setGlobalFileData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Process files whenever a new file is added
-  useEffect(() => {
-    if (files.length > 0) {
-      const f = files[0];
-      const dateBefore = new Date();
+  const processFiles = async (event) => {
+    const files = Array.from(event.dataTransfer.files);
+    const zipFiles = files.filter((file) => file.type === "application/zip");
 
-      // Using JSZip to load the file
-      JSZip.loadAsync(f)
-        .then((zip) => {
-          const contents = [];
-          const readFilesPromises = [];
+    if (zipFiles.length > 0) {
+      setIsLoading(true);
+      const allFileNames = [];
 
-          zip.forEach((relativePath, zipEntry) => {
-            const filePromise = zipEntry.async("string").then((data) => {
-              contents.push({ name: zipEntry.name, data });
-            });
-            readFilesPromises.push(filePromise);
-          });
+      // Process each zip file
+      for (const zipFile of zipFiles) {
+        const zip = new JSZip();
+        const content = await zip.loadAsync(zipFile);
 
-          Promise.all(readFilesPromises)
-            .then(() => {
-              const loadTime = moment(new Date()).diff(moment(dateBefore));
-              setFileInfo({
-                loadTime,
-                contents: contents.sort((a, b) => a.name.localeCompare(b.name)),
-                error: null,
-              });
-              setGlobalFileData(contents); // Store contents globally
-            })
-            .catch((e) => {
-              const loadTime = moment(new Date()).diff(moment(dateBefore));
-              setFileInfo({
-                loadTime,
-                contents: [],
-                error: "Error reading zip contents: " + e.message,
-              });
-              setGlobalFileData([]); // Reset global data in case of error
-            });
-        })
-        .catch((e) => {
-          const loadTime = moment(new Date()).diff(moment(dateBefore));
-          setFileInfo({
-            loadTime,
-            contents: [],
-            error: "Error reading " + f.name + ": " + e.message,
-          });
-          setGlobalFileData([]); // Reset global data in case of error
+        // Filter out unwanted files and folders
+        const fileNames = Object.keys(content.files).filter((fileName) => {
+          // Exclude system files and directories
+          return (
+            !fileName.startsWith("__MACOSX") && !content.files[fileName].dir
+          );
         });
-    }
-  }, [files]);
 
-  // Handle drop event logic
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const droppedFiles = e.dataTransfer.files;
-    if (droppedFiles.length > 0) {
-      setFiles(Array.from(droppedFiles)); // Convert FileList to array
+        allFileNames.push(...fileNames); // Collect valid file names
+      }
+
+      setGlobalFileData(allFileNames); // Store processed file names
+      setIsLoading(false);
     }
   };
 
-  return { fileInfo, handleDrop, globalFileData }; // Return the global file data
+  return { globalFileData, processFiles, isLoading };
 };
+
+export default useFileProcessing;
