@@ -50,5 +50,5 @@ export async function POST(req) {
     });
 
     console.log(result.object)
-    return new Response(result.object);
+    return Response.json(result);
 }
