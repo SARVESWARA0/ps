@@ -16,7 +16,7 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
 
   useEffect(() => {
     console.log("Object updated:", object);
-  }, [object]); // Log updates in `object` when it changes
+  }, [object]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,14 +111,12 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
         )}
       </div>
 
-      {/* Error Display */}
       {object?.error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {object.error}
         </div>
       )}
 
-      {/* Chat Messages Display */}
       <div className="space-y-4">
         {messages.length > 0 ? (
           messages.map((message, index) => renderMessage(message, index))
@@ -127,7 +125,6 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
         )}
       </div>
 
-      {/* Loading Indicator */}
       {loading && (
         <div className="flex items-center justify-center py-4">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
@@ -137,20 +134,33 @@ const PostContents = ({ fileNames, fileContents, loading, setLoading, setError }
       {/* Analysis Results */}
       {object && object.status_of_completion && (
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-          <div className="mb-4">
+          <div className="completion">
             <h3 className="text-lg font-semibold mb-2">Status</h3>
             <p className="text-gray-700">{object.status_of_completion}</p>
           </div>
-          {object.code_complexity && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Complexity Analysis</h3>
-              <p className="text-gray-700">{object.code_complexity}</p>
-            </div>
-          )}
+          <div className="complexity">
+            {object.code_complexity && (
+              <>
+                <h3 className="text-lg font-semibold mb-2">Complexity Analysis</h3>
+                <p className="text-gray-700">{object.code_complexity}</p>
+              </>
+            )}
+          </div>
           {object.evaluation_question && (
-            <div className="mb-4">
+            <div className="evaluation">
               <h3 className="text-lg font-semibold mb-2">Next Question</h3>
-              <p className="text-gray-700">{object.evaluation_question}</p>
+              <p className="text-gray-700 mb-4">{object.evaluation_question}</p>
+              <ul className="list-disc pl-6">
+                {object.options && object.options.length > 0 ? (
+                  object.options.map((option, index) => (
+                    <li key={index} className="text-gray-700">
+                      {option}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-500">No options available</li>
+                )}
+              </ul>
             </div>
           )}
         </div>

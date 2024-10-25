@@ -91,3 +91,7 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.completion,.complexity{
+  display: none;
+}
