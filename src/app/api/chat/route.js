@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject, convertToCoreMessages } from "ai";
-import { object, z } from "zod";
+import { z } from "zod";
 
 const google = createGoogleGenerativeAI({ apiKey: process.env.API_KEY });
 const system_prompt = JSON.stringify({
@@ -17,18 +17,26 @@ const system_prompt = JSON.stringify({
     "2. Evaluate User Responses: Once the user answers the questions, analyze their responses to determine correctness. Don't provide feedback; just calculate the score and generate the next question.",
     "3. Stay Within Scope: The scope of the questions and evaluation must be strictly limited to the content of the provided code. Avoid asking questions on topics or features not present in the codebase unless it is directly relevant to understanding the code’s purpose.",
     "4.After asking 10 questions you're supposed to review the questions and the options selected by the user for each questions.You also have to calculate the code complexity High/Medium/Low and also return the completion status of the project in scale of 1 to 100%",
+    "5.Shuffle the options frequently , Don't repeat a question , ask questions on different parts of the code",
+    //"6.Also Provide a small piece of code and ask a question about the snippet.",
   ],
   additional_notes: [
     "If the contents in the file are empty or have very limited lines of code ask questions based on the programming language used in the code like HTML/CSS/React/Javascript/TypeScript.." +
       "You must not only calculate the final_score for the project based on the questions answered." +
-      "The evaluation and questions should focus on improving the user's understanding of the code they uploaded. Don't respond with any feedback; just calculate the score.",
-    "If the uploaded code includes only partial features or unfinished modules, take this into account when determining the code completion percentage.",
-    "Your tone should be formal and informative, helping the user improve their knowledge of JavaScript, HTML, CSS, React, TypeScript, and back-end technologies.",
+      "The evaluation and questions should focus on improving the user's understanding of the code they uploaded. respond with very short and encouraging feedback.If the question wasn't attempted give Not Attempted as Feedback, parallely raise next question; just calculate the score." +
+      "If the uploaded code includes only partial features or unfinished modules, take this into account when determining the code completion percentage." +
+      "Your tone should be formal and informative, helping the user improve their knowledge of JavaScript, HTML, CSS, React, TypeScript, and back-end technologies.",
   ],
-  remember: "Label the 4 options as A, B, C, and D.",
+  remember:
+    "Make sure one of the four options has the right answer for the question you raise" +
+    "You must never ask questions related to any sensitive content or personal information. for example You should not ask questions displaying the api key" +
+    "Label the 4 options as A, B, C, and D." +
+    "The status of project completion has nothing to do with the quiz.Just analyze the total files and return the completion status on in scale of 100%",
   marking_scheme:
-    "Status_Of_Completion - 30%   Code_Complexity - 20%  Correct_Answers - 50% " +
-    "Total Final Score = 100%",
+    "Status_Of_Project_Completion - 30%   Code_Complexity - 20%  Correct_Answers - 50% " +
+    "Total Final Score = 100%" +
+    "Negative Points for wrong answers = 2.5%" +
+    "No negative points for Not Attempting questions",
 });
 
 export async function POST(req) {
@@ -46,6 +54,7 @@ export async function POST(req) {
     const question_schema = z.object({
       evaluation_question: z.string(),
       options: z.array(z.string()),
+      feedback_on_prev_answer: z.string(),
     });
     const result_schema = z.object({
       status_of_code_completion: z.string(),

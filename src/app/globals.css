@@ -13,11 +13,22 @@
     --foreground: #ededed;
   }
 }
+/* globals.css */
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+
+
+/* For specific use of other fonts */
+.audiowide {
+  font-size:xx-large;
+  font-family: 'Audiowide', sans-serif;
+}
+
+.changa {
+  font-family: 'Changa', sans-serif;
+}
+
+.ubuntu {
+  font-family: 'Ubuntu', sans-serif;
 }
 
 .file-upload {
@@ -90,5 +101,227 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "changa";
+  background-color: #f0f4f8; /* Light background color */
+  color: #333; /* Dark text color for contrast */
+  line-height: 1.6; /* Improve readability */
+  padding: 20px; /* Add some padding around the body */
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: 15px; /* Space below headings */
+  color: #2c3e50; /* Darker color for headings */
+}
+
+.container {
+  max-width: 1200px; /* Center container with max width */
+  margin: 0 auto; /* Center the container */
+  padding: 20px; /* Inner padding */
+  background-color: #ffffff; /* White background for the content */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+.file-drop-zone {
+  border: 2px dashed #3498db; /* Dashed border for file drop area */
+  border-radius: 8px; /* Rounded corners */
+  padding: 20px; /* Inner padding */
+  text-align: center; /* Center the content */
+  transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+.file-drop-zone:hover {
+  background-color: #ecf8ff; /* Light blue background on hover */
+}
+
+.file-list {
+  margin-top: 20px; /* Space above file list */
+  padding: 10px;
+  background-color: #f9f9f9; /* Light background for file list */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.file-list-item {
+  padding: 10px; /* Inner padding for list items */
+  border-bottom: 1px solid #ddd; /* Divider line between items */
+}
+
+.file-list-item:last-child {
+  border-bottom: none; /* Remove border from last item */
+}
+
+.error-message {
+  margin-top: 20px; /* Space above error message */
+  color: #e74c3c; /* Red color for error message */
+  font-weight: bold; /* Bold text for visibility */
+}
+
+.loading-indicator {
+  text-align: center; /* Center loading indicator */
+  margin-top: 20px; /* Space above loading indicator */
+}
+
+.button {
+  background-color: #3498db; /* Primary button color */
+  color: white; /* Text color for button */
+  padding: 10px 15px; /* Padding for button */
+  border: none; /* No border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer on hover */
+  transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+.button:hover {
+  background-color: #2980b9; /* Darker color on hover */
+}
+
+
+
+/* PostContents Component Styles */
+
+/* General Styles */
+.space-y-6 > * + * {
+  margin-top: 1.5rem; /* Space between items in vertical stacking */
+}
+
+h2 {
+  color: #2c3e50; /* Dark color for headings */
+}
+
+/* Button Styles */
+button {
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+}
+
+button:hover {
+  transform: translateY(-1px); /* Slight lift effect on hover */
+}
+
+/* Form Submission Button */
+.bg-blue-500 {
+  background-color: #3498db; /* Primary button color */
+}
+
+.bg-blue-500:hover {
+  background-color: #2980b9; /* Darker shade on hover */
+}
+
+/* Loading Styles */
+.animate-spin {
+  animation: spin 1s linear infinite; /* Spin animation for loading */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error Message Styles */
+.bg-red-50 {
+  background-color: #fce4e4; /* Light red background */
+}
+
+.border-red-200 {
+  border-color: #f5c2c2; /* Light red border */
+}
+
+/* Evaluation Section Styles */
+.bg-gray-50 {
+  background-color: #f9f9f9; /* Light gray background for questions */
+}
+
+.evaluation {
+  padding: 1.5rem; /* Inner padding for evaluation section */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+/* Countdown Timer Styles */
+.font-mono {
+  font-family: 'Courier New', monospace; /* Monospace font for timer */
+}
+
+.text-red-500 {
+  color: #e74c3c; /* Red color for time warning */
+}
+
+/* Final Results Styles */
+.bg-green-50 {
+  background-color: #e6f9e8; /* Light green background for results */
+}
+
+h3 {
+  color: #2c3e50; /* Dark color for section titles */
+}
+
+/* Overall Layout Styles */
+.flex {
+  display: flex; /* Flexbox for layout */
+}
+
+.items-center {
+  align-items: center; /* Center items vertically */
+}
+
+.justify-between {
+  justify-content: space-between; /* Space between items */
+}
+
+.mb-4 {
+  margin-bottom: 1rem; /* Bottom margin for spacing */
+}
+
+.mt-4 {
+  margin-top: 1rem; /* Top margin for spacing */
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem; /* Space between items in a vertical stack */
+}
+
+/* List and Label Styles */
+ul {
+  padding-left: 1.5rem; /* Indent list items */
+}
+
+label {
+  cursor: pointer; /* Pointer on hover for labels */
+}
+
+.text-gray-600 {
+  color: #6c757d; /* Gray color for secondary text */
+}
+
+.text-gray-700 {
+  color: #495057; /* Darker gray for more emphasis */
+}
+
+.text-gray-500 {
+  color: #adb5bd; /* Lighter gray for less emphasis */
+}
+
+/* Radio Input Styles */
+input[type="radio"] {
+  accent-color: #3498db; /* Custom color for radio buttons */
+}
+
+/* Final Results Details */
+.space-y-2 > p {
+  margin: 0.5rem 0; /* Space between paragraphs */
 }
 

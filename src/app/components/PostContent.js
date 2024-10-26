@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { experimental_useObject as useObject } from "ai/react";
+import "../globals.css"
 
-const QUESTION_TIMEOUT = 10; 
+const QUESTION_TIMEOUT = 15; 
 
 const PostContents = ({
   fileNames,
@@ -18,6 +19,7 @@ const PostContents = ({
   const [finalResults, setFinalResults] = useState(null);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIMEOUT);
   const [timerActive, setTimerActive] = useState(false);
+  const [feedback, setFeedback] = useState(""); // State for feedback
 
   const { object, submit } = useObject({
     api: "/api/chat",
@@ -130,6 +132,11 @@ const PostContents = ({
         setFinalResults(response.object);
       }
 
+      // Set feedback from the response
+      if (response?.object?.feedback_on_prev_answer) {
+        setFeedback(response.object.feedback_on_prev_answer);
+      }
+
       setSelectedOption(null);
       setQuestionCount((prev) => prev + 1);
       setTimeLeft(QUESTION_TIMEOUT);
@@ -217,10 +224,16 @@ const PostContents = ({
             <button
               className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleNextQuestion}
-              disabled={loading}
+              disabled={loading || selectedOption === null} // Disable if loading or no option selected
             >
               Next Question
             </button>
+
+            {object?.feedback_on_prev_answer && questionCount>1 &&(
+              <div className="mt-4 bg-blue-50 p-4 rounded">
+                <p className="text-blue-700">{object.feedback_on_prev_answer}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
