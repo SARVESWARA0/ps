@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { experimental_useObject as useObject } from "ai/react";
 import "../globals.css";
-import {Bars} from "react-loader-spinner";
+import { Bars } from "react-loader-spinner";
 
 const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
   const QUESTION_TIMEOUT = 15;
@@ -13,7 +13,9 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
   const [finalResults, setFinalResults] = useState(null);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIMEOUT);
   const [timerActive, setTimerActive] = useState(false);
-  const [feedback, setFeedback] = useState(""); // State for feedback
+  const [feedback, setFeedback] = useState("");
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
 
   const { object, submit, isLoading } = useObject({
     api: "/api/chat",
@@ -28,11 +30,10 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
       ".flex.items-center.gap-2, .dropzone-container.mb-4"
     );
     elementsToHide.forEach((element) => {
-      element.style.display = "none"; // Hides the elements
+      element.style.display = "none";
     });
   };
 
-  // Timer effect
   useEffect(() => {
     let timer;
     if (timerActive && timeLeft > 0) {
@@ -118,7 +119,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         role: "user",
         content: JSON.stringify({
           type: "answer_submission",
-          answer: selectedOption || "No answer", // Submit "No answer" if time runs out
+          answer: selectedOption || "No answer",
           questionNumber: questionCount,
         }),
       };
@@ -135,10 +136,19 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         setFinalResults(response.object);
       }
 
-      // Set feedback from the response
       if (response?.object?.feedback_on_prev_answer) {
         setFeedback(response.object.feedback_on_prev_answer);
       }
+
+      setUserAnswers((prev) => [
+        ...prev,
+        {
+          question: object.evaluation_question,
+          options: object.options,
+          selectedAnswer: selectedOption || "No answer",
+          feedback: response?.object?.feedback_on_prev_answer || "No feedback",
+        },
+      ]);
 
       setSelectedOption(null);
       setQuestionCount((prev) => prev + 1);
@@ -149,6 +159,10 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePreview = () => {
+    setShowPreview(true);
   };
 
   return (
@@ -191,9 +205,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
           <div className="evaluation">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                Question {questionCount}
-              </h3>
+              <h3 className="text-lg font-semibold">Question {questionCount}</h3>
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">⏱️</span>
                 <span
@@ -209,7 +221,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
             {object.options && object.options.length > 0 ? (
               <ul className="space-y-2 flex flex-col">
                 {object.options.map((option) => (
-                  <li key={option} className="flex items space-x-2">
+                  <li key={option} className="flex items-center mb-2">
                     <input
                       type="radio"
                       id={`option-${option}`}
@@ -221,7 +233,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
                     />
                     <label
                       htmlFor={`option-${option}`}
-                      className="text-gray-700"
+                      className="text-gray-700 ml-2"
                     >
                       {option}
                     </label>
@@ -278,8 +290,50 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
           >
             Upload Files Again
           </button>
+          <button onClick={handlePreview} className="upload_files_again">
+            Preview
+          </button>
         </div>
       )}
+
+{showPreview && (
+  <div className="bg-gray-50 p-6 rounded-lg shadow-sm mt-4">
+    <h3 className="text-lg font-semibold mb-2">Preview of Answers</h3>
+    {userAnswers.map((item, index) => (
+      <div key={index} className="mb-4 p-4 border border-gray-200 rounded">
+        <h4 className="font-semibold">Question {index + 1}:</h4>
+        <p className="text-gray-700 my-2">{item.question}</p>
+        <p className="font-semibold">Your Answer: {item.selectedAnswer}</p>
+
+        <ul className="space-y-2 mt-3"> {/* This creates vertical spacing */}
+          {item.options && item.options.length > 0 ? (
+            item.options.map((option) => (
+              <li key={option} className="flex items-center"> {/* Ensure this line is structured for vertical display */}
+                <input
+                  type="radio"
+                  checked={item.selectedAnswer === option}
+                  className="form-radio text-blue-500"
+                  readOnly
+                />
+                <span className="text-gray-700 ml-2">{option}</span>
+              </li>
+            ))
+          ) : (
+            <p className="text-gray-500">No options available</p>
+          )}
+        </ul>
+      </div>
+    ))}
+    <button
+      onClick={() => setShowPreview(false)}
+      className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded transition-colors duration-200"
+    >
+      Close Preview
+    </button>
+  </div>
+)}
+
+
     </div>
   );
 };

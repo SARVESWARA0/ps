@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { useFileProcessing } from "../backend/backend";
+import { useFileProcessing } from "./unzip";
 import JSZip from "jszip";
 import "../globals.css";
-
-
 
 const FileDropZone = ({ onGlobalFileData }) => {
   const { isLoading } = useFileProcessing();
@@ -54,7 +52,6 @@ const FileDropZone = ({ onGlobalFileData }) => {
 
       const allFileData = (await Promise.all(fileDataPromises)).filter(Boolean);
 
-  
       setGlobalFileData(allFileData);
       onGlobalFileData(allFileData);
     },
