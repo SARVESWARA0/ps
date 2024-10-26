@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject} from "ai";
+import { generateObject } from "ai";
 import { z } from "zod";
 
 const google = createGoogleGenerativeAI({ apiKey: process.env.API_KEY });
@@ -20,6 +20,8 @@ const system_prompt = JSON.stringify({
     "5.Shuffle the options frequently , Don't repeat a question , ask questions on different parts of the code",
     //"6.Also Provide a small piece of code and ask a question about the snippet.",
   ],
+  rules:
+    "You must never ask questions on the personal details,value of APIKEY or any other questions that requires personal information.Ask only technical questions",
   additional_notes: [
     "Most of your questions must be technical questions and avoid asking silly/ very basic questions" +
       "If the contents in the file are empty or have very limited lines of code ask questions based on the programming language used in the code like HTML/CSS/React/Javascript/TypeScript.." +
