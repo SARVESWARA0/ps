@@ -2,24 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { experimental_useObject as useObject } from "ai/react";
 import "../globals.css";
+import {Bars} from "react-loader-spinner";
 
-const QUESTION_TIMEOUT = 15;
-const hideElements = () => {
-  const elementsToHide = document.querySelectorAll(
-    ".flex.items-center.gap-2, .dropzone-container.mb-4"
-  );
-  elementsToHide.forEach((element) => {
-    element.style.display = "none"; // Hides the elements
-  });
-};
-
-const PostContents = ({
-  fileNames,
-  fileContents,
-  loading,
-  setLoading,
-  setError,
-}) => {
+const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
+  const QUESTION_TIMEOUT = 15;
   const [chatStarted, setChatStarted] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -29,13 +15,22 @@ const PostContents = ({
   const [timerActive, setTimerActive] = useState(false);
   const [feedback, setFeedback] = useState(""); // State for feedback
 
-  const { object, submit } = useObject({
+  const { object, submit, isLoading } = useObject({
     api: "/api/chat",
     initialObject: {
       evaluation_question: "",
       options: [],
     },
   });
+
+  const hideElements = () => {
+    const elementsToHide = document.querySelectorAll(
+      ".flex.items-center.gap-2, .dropzone-container.mb-4"
+    );
+    elementsToHide.forEach((element) => {
+      element.style.display = "none"; // Hides the elements
+    });
+  };
 
   // Timer effect
   useEffect(() => {
@@ -165,9 +160,9 @@ const PostContents = ({
             <button
               className="startanalysis"
               type="submit"
-              disabled={loading || !fileContents?.length}
+              disabled={isLoading || !fileContents?.length}
             >
-              {loading ? (
+              {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="animate-spin">⌛</span>
                   Starting Analysis...
@@ -186,9 +181,9 @@ const PostContents = ({
         </div>
       )}
 
-      {loading && (
+      {isLoading && (
         <div className="flex items-center justify-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
+          <Bars color="#3B82F6" size={30} />
         </div>
       )}
 
@@ -239,14 +234,22 @@ const PostContents = ({
             <button
               className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleNextQuestion}
-              disabled={loading || selectedOption === null} // Disable if loading or no option selected
+              disabled={isLoading || selectedOption === null}
             >
               Next Question
             </button>
 
             {object?.feedback_on_prev_answer && questionCount > 1 && (
               <div className="mt-4 bg-blue-50 p-4 rounded">
-                <p className="text-blue-700">
+                <p
+                  className={`${
+                    object.feedback_on_prev_answer.includes("Incorrect")
+                      ? "text-red-500"
+                      : object.feedback_on_prev_answer.includes("Correct")
+                      ? "text-green-500"
+                      : "text-blue-700"
+                  }`}
+                >
                   {object.feedback_on_prev_answer}
                 </p>
               </div>
@@ -268,7 +271,7 @@ const PostContents = ({
             <p>Answered Correct: {finalResults.Answered_Correct}</p>
             <p>Final Score: {finalResults.final_score}%</p>
           </div>
-          <br/>
+          <br />
           <button
             onClick={() => location.reload()}
             className="upload_files_again"

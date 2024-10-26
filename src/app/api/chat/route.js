@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject, convertToCoreMessages } from "ai";
+import { generateObject} from "ai";
 import { z } from "zod";
 
 const google = createGoogleGenerativeAI({ apiKey: process.env.API_KEY });

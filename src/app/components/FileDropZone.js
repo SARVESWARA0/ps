@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { useFileProcessing } from "../backend/backend"; 
-import JSZip from "jszip"; // Import JSZip to handle ZIP files
+import { useFileProcessing } from "../backend/backend";
+import JSZip from "jszip";
 import "../globals.css";
 
 
@@ -9,7 +9,7 @@ import "../globals.css";
 const FileDropZone = ({ onGlobalFileData }) => {
   const { isLoading } = useFileProcessing();
   const [isDragging, setIsDragging] = useState(false);
-  const [globalFileData, setGlobalFileData] = useState([]); // State to hold filenames and contents
+  const [globalFileData, setGlobalFileData] = useState([]);
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -26,8 +26,6 @@ const FileDropZone = ({ onGlobalFileData }) => {
       setIsDragging(false);
 
       const files = Array.from(e.dataTransfer.files);
-
-      // Only process ZIP files
       const zipFile = files.find((file) => file.name.endsWith(".zip"));
       if (!zipFile) {
         alert("Please drop a ZIP file.");
@@ -35,31 +33,34 @@ const FileDropZone = ({ onGlobalFileData }) => {
       }
 
       const zip = new JSZip();
-      const loadedZip = await zip.loadAsync(zipFile); // Load the ZIP file
+      const loadedZip = await zip.loadAsync(zipFile);
       const fileDataPromises = Object.keys(loadedZip.files).map(
         async (filename) => {
           const file = loadedZip.files[filename];
 
-          // Exclude unwanted files
-          if (filename.startsWith("__MACOSX") || filename.startsWith(".")) {
-            return null; // Return null for files to be excluded
+          // Check if the entry is a directory or a system file
+          if (
+            file.dir ||
+            filename.startsWith("__MACOSX") ||
+            filename.startsWith(".")
+          ) {
+            return null;
           }
 
-          // Read the content of each file
-          const content = await file.async("string"); // Adjust this if needed (e.g., "blob", "uint8array", etc.)
-          return { name: filename, content }; // Create an object with the filename and content
+          const content = await file.async("string");
+          return { name: filename, content };
         }
       );
 
-      // Filter out null values (unwanted files)
       const allFileData = (await Promise.all(fileDataPromises)).filter(Boolean);
 
-
-      setGlobalFileData(allFileData); // Update state with filenames and contents
-      onGlobalFileData(allFileData); // Pass the combined data to the parent component
+  
+      setGlobalFileData(allFileData);
+      onGlobalFileData(allFileData);
     },
     [onGlobalFileData]
   );
+
   return (
     <div className="dropzone-container mb-4">
       <div
@@ -73,14 +74,15 @@ const FileDropZone = ({ onGlobalFileData }) => {
         <p>{isDragging ? "Drop files here" : "Drag and drop ZIP files here"}</p>
         {isLoading && <span className="spinner">Processing files...</span>}
       </div>
-      <div className="fileList mt-4">
+      <div className="fileList mt-4" id="filenames">
         <h3 className="font-semibold">Files inside ZIP:</h3>
+
         {globalFileData.length > 0 ? (
           <ul>
             {globalFileData.map((file, index) => (
-              <li key={index} className="file-item">
-                {file.name}
-              </li> // Display the file name
+              <div key={index} className="file-item">
+                <span className="file-name">{file.name}</span>
+              </div>
             ))}
           </ul>
         ) : (
