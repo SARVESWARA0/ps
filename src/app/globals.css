@@ -3,21 +3,28 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  
+  --background-light: #d2e1f0; /* Light background color */
+  --background-dark: #0a0a0a; /* Dark background color */
+}
+
+body {
+  font-family: "changa";
+  background-color: var(--background-light); /* Use light background by default */
+  color: #333; /* Dark text color for contrast */
+  line-height: 1.6;
+  padding: 20px;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--background-dark); /* Switch to dark background in dark mode */
+    color: var(--foreground); /* Update text color for readability */
   }
 }
-/* globals.css */
 
 
 
-/* For specific use of other fonts */
 .audiowide {
   font-size:xx-large;
   font-family: 'Audiowide', sans-serif;
@@ -37,14 +44,16 @@
 }
 
 .dropzone {
-  border: 2px dashed #ccc;
+  border: 2px dashed #090909;
   border-radius: 8px;
-  padding: 32px;
+  padding: 128px; /* Increased padding */
+  font-size: 1.2em; /* Optional: Adjust font size for better readability */
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 20px;
 }
+
 
 .dropzone.dragging {
   border-color: #2563eb;
@@ -57,7 +66,32 @@
   padding: 16px;
   margin: 16px 0;
   background-color: #f9fafb;
+  list-style: none;
 }
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.fileItem:last-child {
+  border-bottom: none;
+}
+
+.fileIcon {
+  font-size: 4.5em; /* Increased font size for larger icon */
+  margin-right: 12px;
+  color: #6b7280;
+}
+
+
+.file-name {
+  font-size: 1.2em;
+  color: #374151;
+}
+
 
 .fileList h3 {
   margin: 0 0 12px 0;
@@ -127,7 +161,7 @@ h1, h2, h3, h4 {
   max-width: 1200px; /* Center container with max width */
   margin: 0 auto; /* Center the container */
   padding: 20px; /* Inner padding */
-  background-color: #ffffff; /* White background for the content */
+  background-color: #f8f8f8; /* White background for the content */
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
 }
@@ -144,22 +178,44 @@ h1, h2, h3, h4 {
   background-color: #ecf8ff; /* Light blue background on hover */
 }
 
-.file-list {
-  margin-top: 20px; /* Space above file list */
-  padding: 10px;
-  background-color: #f9f9f9; /* Light background for file list */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+.fileList {
+  border: 1px solid #d6dbe500;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background-color: #f9fafb00;
 }
 
-.file-list-item {
-  padding: 10px; /* Inner padding for list items */
-  border-bottom: 1px solid #ddd; /* Divider line between items */
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  list-style: none;
 }
 
-.file-list-item:last-child {
-  border-bottom: none; /* Remove border from last item */
+.file-item {
+  display: inline-flex;
+  align-items: center;
+  
+  padding: 10; 
+  margin: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  min-width: max-content; /* Ensures the width fits the content */
 }
+
+.fileIcon {
+  font-size: 4em;
+  margin-right: 8px;
+  color: #6b7280;
+}
+
+.file-name {
+  font-size: 1em;
+  color: #374151;
+  margin: 0;
+}
+
 
 .error-message {
   margin-top: 20px; /* Space above error message */
@@ -325,3 +381,19 @@ input[type="radio"] {
   margin: 0.5rem 0; /* Space between paragraphs */
 }
 
+
+.startanalysis,.upload_files_again{
+  background-color: #3b82f6; /* bg-blue-500 */
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem; /* py-2 px-4 */
+  border-radius: 0.375rem; /* rounded */
+  transition: background-color 0.2s ease;
+}
+.startanalysis:hover{
+  background-color: #1d4ed8;
+}
+.startanalysis:disabled{
+  opacity: 0.5; 
+  cursor: not-allowed;
+}

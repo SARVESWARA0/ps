@@ -1,9 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { experimental_useObject as useObject } from "ai/react";
-import "../globals.css"
+import "../globals.css";
 
-const QUESTION_TIMEOUT = 15; 
+const QUESTION_TIMEOUT = 15;
+const hideElements = () => {
+  const elementsToHide = document.querySelectorAll(
+    ".flex.items-center.gap-2, .dropzone-container.mb-4"
+  );
+  elementsToHide.forEach((element) => {
+    element.style.display = "none"; // Hides the elements
+  });
+};
 
 const PostContents = ({
   fileNames,
@@ -45,7 +53,6 @@ const PostContents = ({
     };
   }, [timerActive, timeLeft]);
 
-  
   useEffect(() => {
     if (object?.evaluation_question) {
       setTimeLeft(QUESTION_TIMEOUT);
@@ -80,6 +87,7 @@ const PostContents = ({
 
     setLoading(true);
     setError(null);
+    hideElements();
 
     try {
       const fileData = fileNames.map((name, index) => ({
@@ -109,7 +117,7 @@ const PostContents = ({
 
   const handleNextQuestion = async () => {
     setTimerActive(false);
-    
+
     try {
       const userAnswer = {
         role: "user",
@@ -123,9 +131,9 @@ const PostContents = ({
       const updatedMessages = [...messages, userAnswer];
       setMessages(updatedMessages);
 
-      const response = await submit({ 
-        messages: updatedMessages, 
-        questionNumber: questionCount 
+      const response = await submit({
+        messages: updatedMessages,
+        questionNumber: questionCount,
       });
 
       if (response?.object?.status_of_code_completion) {
@@ -155,7 +163,7 @@ const PostContents = ({
         {!chatStarted && (
           <form onSubmit={handleSubmit}>
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="startanalysis"
               type="submit"
               disabled={loading || !fileContents?.length}
             >
@@ -188,21 +196,25 @@ const PostContents = ({
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
           <div className="evaluation">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Question {questionCount}</h3>
+              <h3 className="text-lg font-semibold">
+                Question {questionCount}
+              </h3>
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">⏱️</span>
-                <span className={`font-mono ${
-                  timeLeft <= 5 ? 'text-red-500' : 'text-gray-600'
-                }`}>
+                <span
+                  className={`font-mono ${
+                    timeLeft <= 5 ? "text-red-500" : "text-gray-600"
+                  }`}
+                >
                   {timeLeft}s
                 </span>
               </div>
             </div>
             <p className="text-gray-700 mb-4">{object.evaluation_question}</p>
             {object.options && object.options.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2 flex flex-col">
                 {object.options.map((option) => (
-                  <li key={option} className="flex items-center space-x-2">
+                  <li key={option} className="flex items space-x-2">
                     <input
                       type="radio"
                       id={`option-${option}`}
@@ -212,7 +224,10 @@ const PostContents = ({
                       onChange={(e) => setSelectedOption(e.target.value)}
                       className="form-radio text-blue-500"
                     />
-                    <label htmlFor={`option-${option}`} className="text-gray-700">
+                    <label
+                      htmlFor={`option-${option}`}
+                      className="text-gray-700"
+                    >
                       {option}
                     </label>
                   </li>
@@ -229,9 +244,11 @@ const PostContents = ({
               Next Question
             </button>
 
-            {object?.feedback_on_prev_answer && questionCount>1 &&(
+            {object?.feedback_on_prev_answer && questionCount > 1 && (
               <div className="mt-4 bg-blue-50 p-4 rounded">
-                <p className="text-blue-700">{object.feedback_on_prev_answer}</p>
+                <p className="text-blue-700">
+                  {object.feedback_on_prev_answer}
+                </p>
               </div>
             )}
           </div>
@@ -242,12 +259,22 @@ const PostContents = ({
         <div className="bg-green-50 p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Final Analysis Results</h3>
           <div className="space-y-2">
-            <p>Status of Code Completion: {finalResults.status_of_code_completion}</p>
+            <p>
+              Status of Code Completion:{" "}
+              {finalResults.status_of_code_completion}
+            </p>
             <p>Complexity of Code: {finalResults.complexity_of_code}</p>
             <p>Number of Questions: {finalResults.Number_Of_Questions}</p>
             <p>Answered Correct: {finalResults.Answered_Correct}</p>
             <p>Final Score: {finalResults.final_score}%</p>
           </div>
+          <br/>
+          <button
+            onClick={() => location.reload()}
+            className="upload_files_again"
+          >
+            Upload Files Again
+          </button>
         </div>
       )}
     </div>

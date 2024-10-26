@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { useFileProcessing } from "../backend/backend"; // Adjust the import path as necessary
+import { useFileProcessing } from "../backend/backend"; 
 import JSZip from "jszip"; // Import JSZip to handle ZIP files
 import "../globals.css";
 
-export let names = []; // Array to hold file names
-export let contents = []; // Array to hold file contents
+
 
 const FileDropZone = ({ onGlobalFileData }) => {
   const { isLoading } = useFileProcessing();
@@ -55,15 +54,6 @@ const FileDropZone = ({ onGlobalFileData }) => {
       // Filter out null values (unwanted files)
       const allFileData = (await Promise.all(fileDataPromises)).filter(Boolean);
 
-      // Clear the global arrays before pushing new data
-      names = [];
-      contents = [];
-
-      // Push filenames and contents into respective arrays
-      allFileData.forEach((fileData) => {
-        names.push(fileData.name);
-        contents.push(fileData.content);
-      });
 
       setGlobalFileData(allFileData); // Update state with filenames and contents
       onGlobalFileData(allFileData); // Pass the combined data to the parent component
