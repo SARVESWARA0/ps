@@ -33,25 +33,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     });
   };
 
-  useEffect(() => {
-    if (object && object.evaluation_question) {
-      const aiMessage = {
-        role: "assistant",
-        content: JSON.stringify({
-          type: "evaluation_question",
-          question: object.evaluation_question,
-          options: object.options,
-        }),
-      };
-      setMessages((prevMessages) => [...prevMessages, aiMessage]);
-    } else if (object && object.status_of_code_completion) {
-      setFinalResults(object);
-      setTimerActive(false);
-      if (object.feedback_on_prev_answer) {
-        setFeedbackArray((prev) => [...prev, object.feedback_on_prev_answer]);
-      }
-    }
-  }, [object]);
+
 
   useEffect(() => {
     let timer;
@@ -89,6 +71,26 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     } else if (object && object.status_of_code_completion) {
       setFinalResults(object);
       setTimerActive(false);
+    }
+  }, [object]);
+
+  useEffect(() => {
+    if (object && object.evaluation_question) {
+      const aiMessage = {
+        role: "assistant",
+        content: JSON.stringify({
+          type: "evaluation_question",
+          question: object.evaluation_question,
+          options: object.options,
+        }),
+      };
+      setMessages((prevMessages) => [...prevMessages, aiMessage]);
+    } else if (object && object.status_of_code_completion) {
+      setFinalResults(object);
+      setTimerActive(false);
+      if (object.feedback_on_prev_answer) {
+        setFeedbackArray((prev) => [...prev, object.feedback_on_prev_answer]);
+      }
     }
   }, [object]);
 
@@ -178,6 +180,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
 
   const handlePreview = () => {
     setShowPreview(true);
+    console.log(feedbackArray)
   };
 
   return (
@@ -345,11 +348,10 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
                 )}
               </ul>
 
-              {/* Add feedback display */}
-              {index >= 0 && index <= 9 && feedbackArray[index] && (
+              {index >= 1 && index <= 10 && feedbackArray[index] && (
                 <div className="mt-4 bg-blue-50 p-4 rounded">
                   <p className="font-medium">Feedback:</p>
-                  <p className="text-blue-700">{feedbackArray[index + 1]}</p>
+                  <p className="text-blue-700">{feedbackArray[index+1]}</p>
                 </div>
               )}
             </div>
