@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "vercel build",
+    "build": "npm install --legacy-peer-deps && vercel build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -14,8 +14,8 @@
     "jszip": "^3.10.1",
     "moment": "^2.30.1",
     "next": "^15.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-loader-spinner": "^6.1.6",
     "react-spinners": "^0.14.1",
     "zod": "^3.23.8"
