@@ -1,7 +1,5 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import { experimental_useObject as useObject } from "ai/react";
-import "../globals.css";
 import { Bars } from "react-loader-spinner";
 
 const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
@@ -13,7 +11,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
   const [finalResults, setFinalResults] = useState(null);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIMEOUT);
   const [timerActive, setTimerActive] = useState(false);
-  const [feedback, setFeedback] = useState("");
+  const [feedbackArray, setFeedbackArray] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -22,6 +20,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     initialObject: {
       evaluation_question: "",
       options: [],
+      feedback_on_prev_answer: "",
     },
   });
 
@@ -33,6 +32,26 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
       element.style.display = "none";
     });
   };
+
+  useEffect(() => {
+    if (object && object.evaluation_question) {
+      const aiMessage = {
+        role: "assistant",
+        content: JSON.stringify({
+          type: "evaluation_question",
+          question: object.evaluation_question,
+          options: object.options,
+        }),
+      };
+      setMessages((prevMessages) => [...prevMessages, aiMessage]);
+    } else if (object && object.status_of_code_completion) {
+      setFinalResults(object);
+      setTimerActive(false);
+      if (object.feedback_on_prev_answer) {
+        setFeedbackArray((prev) => [...prev, object.feedback_on_prev_answer]);
+      }
+    }
+  }, [object]);
 
   useEffect(() => {
     let timer;
@@ -132,13 +151,9 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         questionNumber: questionCount,
       });
 
-      if (response?.object?.status_of_code_completion) {
-        setFinalResults(response.object);
-      }
+      let feedbackText = object?.feedback_on_prev_answer || "No feedback";
 
-      if (response?.object?.feedback_on_prev_answer) {
-        setFeedback(response.object.feedback_on_prev_answer);
-      }
+      setFeedbackArray((prev) => [...prev, feedbackText]);
 
       setUserAnswers((prev) => [
         ...prev,
@@ -146,7 +161,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
           question: object.evaluation_question,
           options: object.options,
           selectedAnswer: selectedOption || "No answer",
-          feedback: response?.object?.feedback_on_prev_answer || "No feedback",
+          feedback: feedbackText,
         },
       ]);
 
@@ -205,7 +220,9 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
           <div className="evaluation">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Question {questionCount}</h3>
+              <h3 className="text-lg font-semibold">
+                Question {questionCount}
+              </h3>
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">⏱️</span>
                 <span
@@ -296,44 +313,55 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         </div>
       )}
 
-{showPreview && (
-  <div className="bg-gray-50 p-6 rounded-lg shadow-sm mt-4">
-    <h3 className="text-lg font-semibold mb-2">Preview of Answers</h3>
-    {userAnswers.map((item, index) => (
-      <div key={index} className="mb-4 p-4 border border-gray-200 rounded">
-        <h4 className="font-semibold">Question {index + 1}:</h4>
-        <p className="text-gray-700 my-2">{item.question}</p>
-        <p className="font-semibold">Your Answer: {item.selectedAnswer}</p>
+      {showPreview && (
+        <div className="bg-gray-50 p-6 rounded-lg shadow-sm mt-4">
+          <h3 className="text-lg font-semibold mb-2">Preview of Answers</h3>
+          {userAnswers.map((item, index) => (
+            <div
+              key={index}
+              className="mb-4 p-4 border border-gray-200 rounded"
+            >
+              <h4 className="font-semibold">Question {index + 1}:</h4>
+              <p className="text-gray-700 my-2">{item.question}</p>
+              <p className="font-semibold">
+                Your Answer: {item.selectedAnswer}
+              </p>
 
-        <ul className="space-y-2 mt-3"> {/* This creates vertical spacing */}
-          {item.options && item.options.length > 0 ? (
-            item.options.map((option) => (
-              <li key={option} className="flex items-center"> {/* Ensure this line is structured for vertical display */}
-                <input
-                  type="radio"
-                  checked={item.selectedAnswer === option}
-                  className="form-radio text-blue-500"
-                  readOnly
-                />
-                <span className="text-gray-700 ml-2">{option}</span>
-              </li>
-            ))
-          ) : (
-            <p className="text-gray-500">No options available</p>
-          )}
-        </ul>
-      </div>
-    ))}
-    <button
-      onClick={() => setShowPreview(false)}
-      className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded transition-colors duration-200"
-    >
-      Close Preview
-    </button>
-  </div>
-)}
+              <ul className="space-y-2 mt-3 flex flex-col">
+                {item.options && item.options.length > 0 ? (
+                  item.options.map((option) => (
+                    <li key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        checked={item.selectedAnswer === option}
+                        className="form-radio text-blue-500"
+                        readOnly
+                      />
+                      <span className="text-gray-700 ml-2">{option}</span>
+                    </li>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No options available</p>
+                )}
+              </ul>
 
-
+              {/* Add feedback display */}
+              {index >= 0 && index <= 9 && feedbackArray[index] && (
+                <div className="mt-4 bg-blue-50 p-4 rounded">
+                  <p className="font-medium">Feedback:</p>
+                  <p className="text-blue-700">{feedbackArray[index + 1]}</p>
+                </div>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={() => setShowPreview(false)}
+            className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded transition-colors duration-200"
+          >
+            Close Preview
+          </button>
+        </div>
+      )}
     </div>
   );
 };

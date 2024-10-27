@@ -346,9 +346,7 @@ h3 {
   margin-top: 1rem; /* Top margin for spacing */
 }
 
-.space-y-2 > * + * {
-  margin-top: 0.5rem; /* Space between items in a vertical stack */
-}
+
 
 /* List and Label Styles */
 ul {
@@ -376,11 +374,6 @@ input[type="radio"] {
   accent-color: #3498db; /* Custom color for radio buttons */
 }
 
-/* Final Results Details */
-.space-y-2 > p {
-  margin: 0.5rem 0; /* Space between paragraphs */
-}
-
 
 .startanalysis,.upload_files_again{
   background-color: #3b82f6; /* bg-blue-500 */
@@ -398,3 +391,10 @@ input[type="radio"] {
   opacity: 0.5; 
   cursor: not-allowed;
 }
+
+.form-radio {
+  width: 1.25rem; /* Increase radio button size */
+  height: 1.25rem; /* Increase radio button size */
+  border-radius: 0.25rem; /* Rounded edges */
+}
+

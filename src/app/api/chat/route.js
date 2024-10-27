@@ -8,7 +8,7 @@ const system_prompt = JSON.stringify({
     "Your name is CodEva, a full-stack project code evaluation assistant.",
   scenario:
     "A zip file containing full-stack code files is uploaded by the user. You are provided with the extracted content from this zip file for evaluation.",
-  role: "You are responsible for evaluating the provided code files, which may include back-end code (e.g., Node.js, Express) and front-end code (e.g., JavaScript, HTML, CSS, React, or TypeScript). Your task is to analyze the code and generate questions in the form of Multiple-Choice Questions (MCQs) with 4 options based on the code content. Additionally, you will assess the answers provided by the user to these questions and give feedback on their correctness.",
+  role: "You are responsible for evaluating the provided code files, which may include back-end code (e.g., Node.js, Express) and front-end code (e.g., JavaScript, HTML, CSS, React, or TypeScript) by obeying the rules provided. Your task is to analyze the code and generate questions in the form of Multiple-Choice Questions (MCQs) with 4 options based on the code content. Additionally, you will assess the answers provided by the user to these questions and give feedback on their correctness.",
   instructions: [
     "1. Generate Multiple-Choice Questions (MCQs): Based on the code you've analyzed, generate a set of 10 multiple-choice questions one by one, each with 4 options. The questions should be scoped to the code provided, focusing on the concepts, patterns, and features present in the codebase. Split the questions into difficulty levels as follows:",
     "   - Easy Level (4 questions): These should focus on basic concepts found in the code. For example, if the code includes simple loops, ask about the syntax or behavior of such structures. These questions are intended to check for a basic understanding of the code's elements and functionality.",
@@ -20,10 +20,16 @@ const system_prompt = JSON.stringify({
     "5.Shuffle the options frequently , Don't repeat a question , ask questions on different parts of the code",
     //"6.Also Provide a small piece of code and ask a question about the snippet.",
   ],
-  rules:
-    "You must never ask questions on the personal details,value of APIKEY or any other questions that requires personal information.Ask only technical questions",
+  rules: [
+    "You must never ask question about the status_of_completion/code_complexity or marking systems" +
+      "You must never ask questions on the personal details,value of APIKEY or any other questions that requires personal information.Ask only technical questions",
+    "You must never ask repeated questions or similar questions.",
+    "Ask only technical questions",
+    "Increase the difficulty for each question one by one",
+  ],
   additional_notes: [
-    "Most of your questions must be technical questions and avoid asking silly/ very basic questions" +
+    "Provide the question,answer and options as per the zod schema" +
+      "Most of your questions must be technical questions and avoid asking silly/ very basic questions" +
       "If the contents in the file are empty or have very limited lines of code ask questions based on the programming language used in the code like HTML/CSS/React/Javascript/TypeScript.." +
       "You must not only calculate the final_score for the project based on the questions answered." +
       "The evaluation and questions should focus on improving the user's understanding of the code they uploaded. respond with very short and encouraging feedback.If the question wasn't attempted give Not Attempted as Feedback, parallely raise next question; just calculate the score." +
@@ -56,26 +62,23 @@ export async function POST(req) {
           ? JSON.stringify(msg.content)
           : msg.content,
     }));
-
     const question_schema = z.object({
       evaluation_question: z.string(),
       options: z.array(z.string()),
       feedback_on_prev_answer: z.string(),
     });
     const result_schema = z.object({
+      feedback_on_prev_answer: z.string(),
       status_of_code_completion: z.string(),
       complexity_of_code: z.string(),
       Number_Of_Questions: z.number(),
       Answered_Correct: z.number(),
       final_score: z.number(),
     });
-
-    console.log(questionNumber);
     let output_schema = question_schema;
     if (messages[messages.length - 1].role == "user" && questionNumber == 10) {
       output_schema = result_schema;
     }
-
     const result = await generateObject({
       model: google("gemini-1.5-flash-002"),
       schema: output_schema,
@@ -84,7 +87,6 @@ export async function POST(req) {
       temperature: 1,
       system: system_prompt,
     });
-
     console.log(result.object);
     return Response.json(result.object);
   } catch (error) {
