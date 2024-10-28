@@ -4,10 +4,13 @@ import { useFileProcessing } from "./unzip";
 import JSZip from "jszip";
 import "../globals.css";
 
+const MAX_FILE_SIZE_MB = 50;
+
 const FileDropZone = ({ onGlobalFileData }) => {
   const { isLoading } = useFileProcessing();
   const [isDragging, setIsDragging] = useState(false);
   const [globalFileData, setGlobalFileData] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -22,38 +25,54 @@ const FileDropZone = ({ onGlobalFileData }) => {
     async (e) => {
       e.preventDefault();
       setIsDragging(false);
+      setErrorMessage("");
 
       const files = Array.from(e.dataTransfer.files);
       const zipFile = files.find((file) => file.name.endsWith(".zip"));
       if (!zipFile) {
-        alert("Please drop a ZIP file.");
+        setErrorMessage("Please drop a ZIP file.");
         return;
       }
 
-      const zip = new JSZip();
-      const loadedZip = await zip.loadAsync(zipFile);
-      const fileDataPromises = Object.keys(loadedZip.files).map(
-        async (filename) => {
-          const file = loadedZip.files[filename];
+      // Check file size limit
+      const fileSizeMB = zipFile.size / (1024 * 1024);
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        setErrorMessage(`File size exceeds the ${MAX_FILE_SIZE_MB} MB limit.`);
+        return;
+      }
 
-          // Check if the entry is a directory or a system file
-          if (
-            file.dir ||
-            filename.startsWith("__MACOSX") ||
-            filename.startsWith(".")
-          ) {
-            return null;
+      try {
+        const zip = new JSZip();
+        const loadedZip = await zip.loadAsync(zipFile);
+        const fileDataPromises = Object.keys(loadedZip.files).map(
+          async (filename) => {
+            const file = loadedZip.files[filename];
+
+            // Exclude directories, system files, and package files
+            if (
+              file.dir ||
+              filename.startsWith("__MACOSX") ||
+              filename.startsWith(".") ||
+              filename === "package.json" ||
+              filename === "package-lock.json"
+            ) {
+              return null;
+            }
+
+            const content = await file.async("string");
+            return { name: filename, content };
           }
+        );
 
-          const content = await file.async("string");
-          return { name: filename, content };
-        }
-      );
-
-      const allFileData = (await Promise.all(fileDataPromises)).filter(Boolean);
-
-      setGlobalFileData(allFileData);
-      onGlobalFileData(allFileData);
+        const allFileData = (await Promise.all(fileDataPromises)).filter(
+          Boolean
+        );
+        setGlobalFileData(allFileData);
+        onGlobalFileData(allFileData);
+      } catch (error) {
+        setErrorMessage("An error occurred while processing the ZIP file.");
+        console.error("File processing error:", error);
+      }
     },
     [onGlobalFileData]
   );
@@ -71,6 +90,10 @@ const FileDropZone = ({ onGlobalFileData }) => {
         <p>{isDragging ? "Drop files here" : "Drag and drop ZIP files here"}</p>
         {isLoading && <span className="spinner">Processing files...</span>}
       </div>
+
+      {/* Error Message Display */}
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
+
       <div className="fileList mt-4" id="filenames">
         <h3 className="font-semibold">Files inside ZIP:</h3>
 

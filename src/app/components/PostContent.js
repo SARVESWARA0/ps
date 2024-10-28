@@ -57,22 +57,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     }
   }, [object?.evaluation_question]);
 
-  useEffect(() => {
-    if (object && object.evaluation_question) {
-      const aiMessage = {
-        role: "assistant",
-        content: JSON.stringify({
-          type: "evaluation_question",
-          question: object.evaluation_question,
-          options: object.options,
-        }),
-      };
-      setMessages((prevMessages) => [...prevMessages, aiMessage]);
-    } else if (object && object.status_of_code_completion) {
-      setFinalResults(object);
-      setTimerActive(false);
-    }
-  }, [object]);
+  
 
   useEffect(() => {
     if (object && object.evaluation_question) {
@@ -85,6 +70,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
         }),
       };
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
+      setFeedbackArray((prev) => [...prev, object.feedback_on_prev_answer]);
     } else if (object && object.status_of_code_completion) {
       setFinalResults(object);
       setTimerActive(false);
@@ -155,7 +141,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
 
       let feedbackText = object?.feedback_on_prev_answer || "No feedback";
 
-      setFeedbackArray((prev) => [...prev, feedbackText]);
 
       setUserAnswers((prev) => [
         ...prev,
@@ -272,14 +257,14 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
             </button>
 
             {object?.feedback_on_prev_answer && questionCount > 1 && (
-              <div className="mt-4 bg-blue-50 p-4 rounded">
+              <div className="mt-4 p-4 rounded">
                 <p
                   className={`${
                     object.feedback_on_prev_answer.includes("Incorrect")
-                      ? "text-red-500"
+                      ? "text-red-700  bg-red-300 p-4 rounded"
                       : object.feedback_on_prev_answer.includes("Correct")
-                      ? "text-green-500"
-                      : "text-blue-700"
+                      ? "text-green-700 bg-green-300 p-4 rounded"
+                      : "text-blue-700 p-4 rounded bg-blue-300"
                   }`}
                 >
                   {object.feedback_on_prev_answer}
@@ -348,7 +333,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
                 )}
               </ul>
 
-              {index >= 1 && index <= 10 && feedbackArray[index] && (
+              {index >= 0 && index <= 10 && feedbackArray[index+1] && (
                 <div className="mt-4 bg-blue-50 p-4 rounded">
                   <p className="font-medium">Feedback:</p>
                   <p className="text-blue-700">{feedbackArray[index+1]}</p>
