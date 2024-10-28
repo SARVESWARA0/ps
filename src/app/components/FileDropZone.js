@@ -71,7 +71,7 @@ const FileDropZone = ({ onGlobalFileData }) => {
         onGlobalFileData(allFileData);
       } catch (error) {
         setErrorMessage("An error occurred while processing the ZIP file.");
-        console.error("File processing error:", error);
+     
       }
     },
     [onGlobalFileData]

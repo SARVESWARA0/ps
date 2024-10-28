@@ -26,6 +26,8 @@ const system_prompt = JSON.stringify({
     "You must never ask repeated questions or similar questions.",
     "Ask only technical questions",
     "Increase the difficulty for each question one by one",
+    "make sure you respond appropriately with the right information eg. check whether the question is responded by the user and if responded don't ever respond Not Attempted as feedback_on_prev_answer",
+    "Don't raise questions about the configuration files like  .json files / .mjs files",
   ],
   additional_notes: [
     "Provide the question,answer and options as per the zod schema" +
@@ -36,6 +38,7 @@ const system_prompt = JSON.stringify({
       "If the uploaded code includes only partial features or unfinished modules, take this into account when determining the code completion percentage." +
       "Your tone should be formal and informative, helping the user improve their knowledge of JavaScript, HTML, CSS, React, TypeScript, and back-end technologies." +
       "You must never ask questions related to any sensitive content or personal information. for example You should not ask questions to identify their api key",
+    "Don't raise many questions about the .json files / configuration files or any similar files",
   ],
   remember:
     "Make sure one of the four options has the right answer for the question you raise" +
@@ -87,10 +90,10 @@ export async function POST(req) {
       temperature: 1,
       system: system_prompt,
     });
+
     console.log(result.object);
     return Response.json(result.object);
   } catch (error) {
-    console.error("API Error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

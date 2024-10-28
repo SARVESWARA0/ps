@@ -3,7 +3,7 @@ import { experimental_useObject as useObject } from "ai/react";
 import { Bars } from "react-loader-spinner";
 
 const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
-  const QUESTION_TIMEOUT = 15;
+  const QUESTION_TIMEOUT = 10;
   const [chatStarted, setChatStarted] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -33,8 +33,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     });
   };
 
-
-
   useEffect(() => {
     let timer;
     if (timerActive && timeLeft > 0) {
@@ -56,8 +54,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
       setTimerActive(true);
     }
   }, [object?.evaluation_question]);
-
-  
 
   useEffect(() => {
     if (object && object.evaluation_question) {
@@ -141,7 +137,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
 
       let feedbackText = object?.feedback_on_prev_answer || "No feedback";
 
-
       setUserAnswers((prev) => [
         ...prev,
         {
@@ -165,7 +160,7 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
 
   const handlePreview = () => {
     setShowPreview(true);
-    console.log(feedbackArray)
+    console.log(feedbackArray);
   };
 
   return (
@@ -333,10 +328,10 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
                 )}
               </ul>
 
-              {index >= 0 && index <= 10 && feedbackArray[index+1] && (
+              {index >= 0 && index <= 10 && feedbackArray[index + 1] && (
                 <div className="mt-4 bg-blue-50 p-4 rounded">
                   <p className="font-medium">Feedback:</p>
-                  <p className="text-blue-700">{feedbackArray[index+1]}</p>
+                  <p className="text-blue-700">{feedbackArray[index + 1]}</p>
                 </div>
               )}
             </div>
