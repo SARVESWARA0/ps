@@ -55,7 +55,7 @@ const system_prompt = JSON.stringify({
 });
 
 export async function POST(req) {
-  try {
+  // try {
     const { messages, questionNumber } = await req.json();
 
     const formattedMessages = messages.map((msg) => ({
@@ -92,7 +92,7 @@ export async function POST(req) {
     });
 
     return Response.json(result.object);
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
+  // } catch (error) {
+  //   return Response.json({ error: error.message }, { status: 500 });
+  // }
 }
