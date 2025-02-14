@@ -56,7 +56,6 @@ const system_prompt = JSON.stringify({
 
 export async function POST(req) {
   try {
-    console.log("Hi");
     const { messages, questionNumber } = await req.json();
 
     const formattedMessages = messages.map((msg) => ({
