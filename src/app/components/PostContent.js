@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { experimental_useObject as useObject } from "ai/react";
 import { Bars } from "react-loader-spinner";
 
@@ -33,6 +33,62 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     });
   };
 
+  // Wrap handleNextQuestion in useCallback so that it's stable across renders
+  const handleNextQuestion = useCallback(async () => {
+    setTimerActive(false);
+
+    try {
+      const userAnswer = {
+        role: "user",
+        content: JSON.stringify({
+          type: "answer_submission",
+          answer: selectedOption || "No answer",
+          questionNumber: questionCount,
+        }),
+      };
+
+      const updatedMessages = [...messages, userAnswer];
+      setMessages(updatedMessages);
+
+      // Submit the updated messages
+      await submit({
+        messages: updatedMessages,
+        questionNumber: questionCount,
+      });
+
+      let feedbackText = object?.feedback_on_prev_answer || "No feedback";
+
+      setUserAnswers((prev) => [
+        ...prev,
+        {
+          question: object.evaluation_question,
+          options: object.options,
+          selectedAnswer: selectedOption || "No answer",
+          feedback: feedbackText,
+        },
+      ]);
+
+      setSelectedOption(null);
+      setQuestionCount((prev) => prev + 1);
+      setTimeLeft(QUESTION_TIMEOUT);
+    } catch (error) {
+      console.error("Error:", error);
+      setError(error.message || "An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    messages,
+    questionCount,
+    selectedOption,
+    submit,
+    object,
+    setError,
+    setLoading,
+    QUESTION_TIMEOUT,
+  ]);
+
+  // Effect to manage timer and trigger next question when time runs out
   useEffect(() => {
     let timer;
     if (timerActive && timeLeft > 0) {
@@ -46,15 +102,17 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [timerActive, timeLeft]);
+  }, [timerActive, timeLeft, handleNextQuestion, object?.evaluation_question]);
 
+  // Effect to restart the timer when a new question is received
   useEffect(() => {
     if (object?.evaluation_question) {
       setTimeLeft(QUESTION_TIMEOUT);
       setTimerActive(true);
     }
-  }, [object?.evaluation_question]);
+  }, [object?.evaluation_question, QUESTION_TIMEOUT]);
 
+  // Effect to handle new object responses
   useEffect(() => {
     if (object && object.evaluation_question) {
       const aiMessage = {
@@ -106,50 +164,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
       await submit({ messages: [initialMessage] });
       setChatStarted(true);
       setQuestionCount(1);
-    } catch (error) {
-      console.error("Error:", error);
-      setError(error.message || "An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNextQuestion = async () => {
-    setTimerActive(false);
-
-    try {
-      const userAnswer = {
-        role: "user",
-        content: JSON.stringify({
-          type: "answer_submission",
-          answer: selectedOption || "No answer",
-          questionNumber: questionCount,
-        }),
-      };
-
-      const updatedMessages = [...messages, userAnswer];
-      setMessages(updatedMessages);
-
-      const response = await submit({
-        messages: updatedMessages,
-        questionNumber: questionCount,
-      });
-
-      let feedbackText = object?.feedback_on_prev_answer || "No feedback";
-
-      setUserAnswers((prev) => [
-        ...prev,
-        {
-          question: object.evaluation_question,
-          options: object.options,
-          selectedAnswer: selectedOption || "No answer",
-          feedback: feedbackText,
-        },
-      ]);
-
-      setSelectedOption(null);
-      setQuestionCount((prev) => prev + 1);
-      setTimeLeft(QUESTION_TIMEOUT);
     } catch (error) {
       console.error("Error:", error);
       setError(error.message || "An unexpected error occurred");
@@ -256,10 +270,10 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
                 <p
                   className={`${
                     object.feedback_on_prev_answer.includes("Incorrect")
-                      ? "text-red-700  bg-red-300 p-4 rounded"
+                      ? "text-red-700 bg-red-300 p-4 rounded"
                       : object.feedback_on_prev_answer.includes("Correct")
                       ? "text-green-700 bg-green-300 p-4 rounded"
-                      : "text-blue-700 p-4 rounded bg-blue-300"
+                      : "text-blue-700 bg-blue-300 p-4 rounded"
                   }`}
                 >
                   {object.feedback_on_prev_answer}
@@ -309,7 +323,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
               <p className="font-semibold">
                 Your Answer: {item.selectedAnswer}
               </p>
-
               <ul className="space-y-2 mt-3 flex flex-col">
                 {item.options && item.options.length > 0 ? (
                   item.options.map((option) => (
@@ -327,7 +340,6 @@ const PostContents = ({ fileNames, fileContents, setLoading, setError }) => {
                   <p className="text-gray-500">No options available</p>
                 )}
               </ul>
-
               {index >= 0 && index <= 10 && feedbackArray[index + 1] && (
                 <div className="mt-4 bg-blue-50 p-4 rounded">
                   <p className="font-medium">Feedback:</p>

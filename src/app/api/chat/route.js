@@ -2,7 +2,9 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-const google = createGoogleGenerativeAI({ apiKey: process.env.API_KEY });
+const google = createGoogleGenerativeAI({
+  apiKey: "AIzaSyDy-11DJCxNjAGBX_F0GvkkDx6L1Dhzfds",
+});
 const system_prompt = JSON.stringify({
   persona:
     "Your name is CodEva, a full-stack project code evaluation assistant.",
