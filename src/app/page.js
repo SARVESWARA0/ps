@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import FileDropZone from "./components/FileDropZone"; 
-import PostContents from "./components/PostContent"; 
+import FileDropZone from "./components/FileDropZone";
+import PostContents from "./components/PostContent";
 import "./globals.css";
 
 const Page = () => {
